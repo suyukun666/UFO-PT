@@ -1,5 +1,5 @@
 ## General Object Pose Transformation Network from Unpaired Data
 
-![horse](./asset/horse.gif)![001gif_appearance](./asset/001gif_appearance.jpeg)
+![horse](./asset/horse.gif)
 
-![sheep](./asset/sheep.gif)![004gif_appearance](./asset/004gif_appearance.jpg)
+![sheep](./asset/sheep.gif)

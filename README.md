@@ -6,7 +6,7 @@ Object pose transformation is a challenging task. Yet, most existing pose transf
 
 ## Results
 
-- #### Video Imitation
+- ##### Video Imitation
 
 ![horse](./asset/horse.gif)
 
@@ -14,7 +14,4 @@ Object pose transformation is a challenging task. Yet, most existing pose transf
 
 - ##### More Visualization
 
-  ```text
-  <embed id="pdfPlayer" src="./asset/001.pdf" type="application/pdf" width="100%" height="600" >
-  ```
-
+![animal](./asset/animal.png)

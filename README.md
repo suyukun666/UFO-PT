@@ -10,6 +10,6 @@ Object pose transformation is a challenging task. Yet, most existing pose transf
 
 <img src="./asset/horse.gif" width="50%"/><img src='./asset/sheep.gif' width="50%">
 
-- ##### More Visualization
+- #### More Visualization
 
 <img src="./asset/animal.png">

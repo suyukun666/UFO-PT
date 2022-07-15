@@ -8,9 +8,9 @@ Object pose transformation is a challenging task. Yet, most existing pose transf
 
 - ##### Video Imitation
 
-![horse]<img src="./asset/horse.gif" width="38%"/>
+<img src="./asset/horse.gif" width="45%"/>
 
-![sheep]<img src="./asset/sheep.gif" width="38%"/>
+<img src="./asset/sheep.gif" width="45%"/>
 
 - ##### More Visualization
 

@@ -83,7 +83,7 @@ class StyleLoss_forward(nn.Module):
         self.opt = opt
         return None
 
-    def forward(X_features, Y_features):
+    def forward(self, X_features, Y_features):
 
         a, b, c, d = X_features.size()
 

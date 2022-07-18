@@ -468,7 +468,7 @@ class Pix2PixModel(torch.nn.Module):
             CBN_in = torch.cat((coor_out['warp_out'], input_semantics), dim=1)
 
         generate_out['fake_image_fg'] = self.net['netG'](
-            input_semantics, warp_out=CBN_in)
+            input_semantics, warp_out=CBN_in, grid=coor_out['grid'], ref_img=ref_image)
         generate_out['construct_bg'] = bg
         mask = input_label != 0
         generate_out['fake_image'] = generate_out['fake_image_fg'] * \

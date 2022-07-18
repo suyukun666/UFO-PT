@@ -214,6 +214,8 @@ class SPADEGenerator(BaseNetwork):
         self.conv_img = nn.Conv2d(final_nc, 3, 3, padding=1)
         self.up = nn.Upsample(scale_factor=2)
 
+        self.conv_t = nn.Conv2d(3, 16 * nf, 3, padding=1)
+
     def compute_latent_vector_size(self, opt):
         num_up_layers = 5
 
@@ -222,12 +224,17 @@ class SPADEGenerator(BaseNetwork):
 
         return sw, sh
 
-    def forward(self, input, warp_out=None):
+    def forward(self, input, warp_out=None, grid=None, ref_img=None):
         seg = input if warp_out is None else warp_out
+
+        ref_T = F.grid_sample(ref_img, grid, padding_mode='border')
+        ref_T = F.interpolate(ref_T, size=(self.sh, self.sw))
+        ref_T = self.conv_t(ref_T)
 
         # we downsample segmap and run convolution
         x = F.interpolate(seg, size=(self.sh, self.sw))
-        x = self.fc(x)
+        # x = self.fc(x)
+        x = self.fc(x) + ref_T
 
         x = self.head_0(x, seg)
 

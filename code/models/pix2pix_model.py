@@ -352,8 +352,12 @@ class Pix2PixModel(torch.nn.Module):
         G_losses['contextual'] = self.get_ctx_loss(
             fake_features, generate_out['ref_features']) * self.opt.lambda_vgg * self.opt.ctx_w
 
-        G_losses['style'] = self.get_style_loss(
-            fake_features, generate_out['ref_features']) * self.opt.weight_style
+        # G_losses['style'] = self.get_style_loss(
+            # fake_features, generate_out['ref_features']) * self.opt.weight_style
+
+        if 'tps_loss' in generate_out and generate_out['tps_loss'] is not None:
+            G_losses['tps_loss'] = generate_out['tps_loss']
+
 
 
         if self.opt.warp_mask_losstype != 'none':
@@ -440,8 +444,7 @@ class Pix2PixModel(torch.nn.Module):
             CBN_in = torch.cat((coor_out['warp_out'], input_semantics), dim=1)
 
         
-        generate_out['fake_image_fg'] = self.net['netG'](
-            input_semantics, warp_out=CBN_in)
+        generate_out['fake_image_fg'] = self.net['netG'](input_semantics, warp_out=CBN_in, grid=coor_out['grid'], ref_img=ref_image)
         generate_out['construct_bg'] = bg
 
         mask = input_label != 0

@@ -326,6 +326,10 @@ class NoVGGCorrespondence(BaseNetwork):
         flow = self.regression(correlation_t)
         grid = self.gridGen(flow)
 
+        if self.opt.isTrain:
+            coor_out['tps_loss'] = F.l1_loss(F.grid_sample(ref_img, grid, padding_mode='border'), real_img)
+
+        coor_out['grid'] = grid
 
         
         f = torch.matmul(theta_permute, phi)

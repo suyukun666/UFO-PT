@@ -13,3 +13,7 @@ Object pose transformation is a challenging task. Yet, most existing pose transf
 - #### More Visualization
 
 <img src="./asset/animal.png">
+
+## Acknowledgement
+
+Our code is borrowed from [CoCosNet](https://github.com/microsoft/CoCosNet) and [Vton](https://github.com/sergeywong).

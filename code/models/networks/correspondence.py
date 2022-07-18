@@ -3,7 +3,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from models.networks.base_network import BaseNetwork
-from models.networks.generator import AdaptiveFeatureGenerator, DomainClassifier, ReverseLayerF
+from models.networks.generator import AdaptiveFeatureGenerator, DomainClassifier, ReverseLayerF, FeatureRegression, TpsGridGen
 from util.util import vgg_preprocess
 import util.util as util
 
@@ -148,6 +148,9 @@ class NoVGGCorrespondence(BaseNetwork):
         self.opt = opt
         super().__init__()
 
+        self.regression = FeatureRegression()
+        self.gridGen = TpsGridGen()
+
         opt.spade_ic = opt.semantic_nc
         self.adaptive_model_seg = AdaptiveFeatureGenerator(opt)
         opt.spade_ic = 3
@@ -177,6 +180,8 @@ class NoVGGCorrespondence(BaseNetwork):
         
         self.phi = nn.Conv2d(in_channels=self.in_channels + label_nc + coord_c, out_channels=self.inter_channels, kernel_size=1, stride=1, padding=0)
         self.theta = nn.Conv2d(in_channels=self.in_channels + label_nc + coord_c, out_channels=self.inter_channels, kernel_size=1, stride=1, padding=0)
+        self.phi_t = nn.Conv2d(256, 256, kernel_size=4, stride=4, padding=0)
+        self.theta_t = nn.Conv2d(256, 256, kernel_size=4, stride=4, padding=0)
         # print('self.phi',self.phi)Conv2d(407, 256, kernel_size=(1, 1), stride=(1, 1))
         # print('self.theta',self.theta)Conv2d(407, 256, kernel_size=(1, 1), stride=(1, 1))
         # sys.exit(0)
@@ -283,11 +288,14 @@ class NoVGGCorrespondence(BaseNetwork):
         else:
             cont_features = self.layer(adaptive_feature_seg)
             ref_features = self.layer(adaptive_feature_img)
+
         
         theta = self.theta(cont_features)
+        theta_t = self.theta_t(theta)
+        theta_t = torch.norm(theta_t, 2, 1, keepdim=True)
         # print('theta.shape',theta.shape)[1, 256, 64, 64]
         if self.opt.match_kernel == 1:
-            theta = theta.view(batch_size, self.inter_channels, -1)  # 2*256*(feature_height*feature_width)
+            theta = theta.view(batch_size, self.inter_channels, -1)  
         else:
             theta = F.unfold(theta, kernel_size=self.opt.match_kernel, padding=int(self.opt.match_kernel // 2))
             
@@ -298,6 +306,8 @@ class NoVGGCorrespondence(BaseNetwork):
         theta_permute = theta.permute(0, 2, 1)  # 2*(feature_height*feature_width)*256 [1, 4096, 2304]
 
         phi = self.phi(ref_features)
+        phi_t = self.theta_t(phi)
+        phi_t = torch.norm(phi_t, 2, 1, keepdim=True)
         if self.opt.match_kernel == 1:
             phi = phi.view(batch_size, self.inter_channels, -1)  # 2*256*(feature_height*feature_width)
         else:
@@ -306,8 +316,19 @@ class NoVGGCorrespondence(BaseNetwork):
         phi_norm = torch.norm(phi, 2, 1, keepdim=True) + sys.float_info.epsilon
         phi = torch.div(phi, phi_norm)
 
+        b_,c_,h_,w_ = theta_t.size()
+        feature_A = theta_t.transpose(2,3).contiguous().view(b_,c_,h_*w_)
+        feature_B = phi_t.view(b_,c_,h_*w_).transpose(1,2)
+        # perform matrix mult.
+        feature_mul = torch.bmm(feature_B,feature_A)
+        correlation_t = feature_mul.view(b_,h_,w_,h_*w_).transpose(2,3).transpose(1,2)
+
+        flow = self.regression(correlation_t)
+        grid = self.gridGen(flow)
+
+
         
-        f = torch.matmul(theta_permute, phi)  # 2*(feature_height*feature_width)*(feature_height*feature_width) 
+        f = torch.matmul(theta_permute, phi)
         # print('f.shape',f.shape)[1, 4096, 4096]
         
         if detach_flag:
@@ -325,7 +346,7 @@ class NoVGGCorrespondence(BaseNetwork):
         f_WTA = f_WTA / temperature
         if return_corr:
             return f_WTA
-        f_div_C = F.softmax(f_WTA.squeeze(), dim=-1)  # 2*1936*1936; softmax along the horizontal line (dim=-1)
+        f_div_C = F.softmax(f_WTA.squeeze(), dim=-1)  # 4096*4096; softmax along the horizontal line (dim=-1)
 
         # downsample the reference color
         if self.opt.warp_patch:
@@ -337,13 +358,14 @@ class NoVGGCorrespondence(BaseNetwork):
         ref = ref.permute(0, 2, 1)
 
         
-        y = torch.matmul(f_div_C, ref)  # 2*1936*channel
+        y = torch.matmul(f_div_C, ref)  # 1*4096*3
+
         if self.opt.warp_patch:
             y = y.permute(0, 2, 1)
             y = F.fold(y, 256, self.opt.down, stride=self.opt.down)
         else:
             y = y.permute(0, 2, 1).contiguous()
-            y = y.view(batch_size, channel, feature_height, feature_width)  # 2*3*44*44
+            y = y.view(batch_size, channel, feature_height, feature_width) 
         if (not self.opt.isTrain) and self.opt.show_corr:
             coor_out['warp_out_bi'] = y if self.opt.warp_patch else self.upsampling_bi(y)
         coor_out['warp_out'] = y if self.opt.warp_patch else self.upsampling(y)
@@ -353,19 +375,19 @@ class NoVGGCorrespondence(BaseNetwork):
             channel = ref_seg.shape[1]
             ref_seg = ref_seg.view(batch_size, channel, -1)
             ref_seg = ref_seg.permute(0, 2, 1)
-            warp_mask = torch.matmul(f_div_C, ref_seg)  # 2*1936*channel
+            warp_mask = torch.matmul(f_div_C, ref_seg)  
             warp_mask = warp_mask.permute(0, 2, 1).contiguous()
-            coor_out['warp_mask'] = warp_mask.view(batch_size, channel, feature_height, feature_width)  # 2*3*44*44
+            coor_out['warp_mask'] = warp_mask.view(batch_size, channel, feature_height, feature_width)  
         elif self.opt.warp_mask_losstype == 'cycle':
-            f_div_C_v = F.softmax(f_WTA.transpose(1, 2), dim=-1)  # 2*1936*1936; softmax along the vertical line
+            f_div_C_v = F.softmax(f_WTA.transpose(1, 2), dim=-1)  
             seg = F.interpolate(seg_map, scale_factor=1 / self.opt.down, mode='nearest')
             channel = seg.shape[1]
             seg = seg.view(batch_size, channel, -1)
             seg = seg.permute(0, 2, 1)
-            warp_mask_to_ref = torch.matmul(f_div_C_v, seg)  # 2*1936*channel
-            warp_mask = torch.matmul(f_div_C, warp_mask_to_ref)  # 2*1936*channel
+            warp_mask_to_ref = torch.matmul(f_div_C_v, seg)  
+            warp_mask = torch.matmul(f_div_C, warp_mask_to_ref)  
             warp_mask = warp_mask.permute(0, 2, 1).contiguous()
-            coor_out['warp_mask'] = warp_mask.view(batch_size, channel, feature_height, feature_width)  # 2*3*44*44
+            coor_out['warp_mask'] = warp_mask.view(batch_size, channel, feature_height, feature_width)  
         else:
             warp_mask = None
 

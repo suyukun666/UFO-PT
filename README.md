@@ -16,4 +16,4 @@ Object pose transformation is a challenging task. Yet, most existing pose transf
 
 ## Acknowledgement
 
-Our code is borrowed from [CoCosNet](https://github.com/microsoft/CoCosNet) and [Vton](https://github.com/sergeywong).
+Our code is borrowed from [CoCosNet](https://github.com/microsoft/CoCosNet) and [Vton](https://github.com/sergeywong). Many thanks for their hard work.

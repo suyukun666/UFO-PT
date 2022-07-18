@@ -352,8 +352,8 @@ class Pix2PixModel(torch.nn.Module):
         G_losses['contextual'] = self.get_ctx_loss(
             fake_features, generate_out['ref_features']) * self.opt.lambda_vgg * self.opt.ctx_w
 
-        # G_losses['style'] = self.get_style_loss(
-            # fake_features, generate_out['ref_features']) * self.opt.weight_style
+        G_losses['style'] = self.get_style_loss(
+            fake_features, generate_out['ref_features']) * self.opt.weight_style
 
         if 'tps_loss' in generate_out and generate_out['tps_loss'] is not None:
             G_losses['tps_loss'] = generate_out['tps_loss']

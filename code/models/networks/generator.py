@@ -151,7 +151,6 @@ class TpsGridGen(BaseNetwork):
 
 
 
-
 class FeatureRegression(BaseNetwork):
     def __init__(self, input_nc=256, output_dim=18):
         super(FeatureRegression, self).__init__()

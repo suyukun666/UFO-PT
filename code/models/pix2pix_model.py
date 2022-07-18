@@ -37,6 +37,7 @@ class Pix2PixModel(torch.nn.Module):
 
             self.vggnet_fix.to(self.opt.gpu_ids[0])
             self.contextual_forward_loss = networks.ContextualLoss_forward(opt)
+            self.style_loss = networks.StyleLoss_forward(opt)
 
             self.criterionGAN = networks.GANLoss(
                 opt.gan_mode, tensor=self.FloatTensor, opt=self.opt)
@@ -273,6 +274,12 @@ class Pix2PixModel(torch.nn.Module):
             return contextual_style5_1 + contextual_style4_1 + contextual_style3_1 + contextual_style2_1
         return contextual_style5_1 + contextual_style4_1 + contextual_style3_1
 
+    def get_style_loss(self, source, target):
+        style_style5_1 = self.style_loss(source[-1], target[-1].detach()) * 8
+        style_style4_1 = self.style_loss(source[-2], target[-2].detach()) * 4
+        style_style3_1 = self.style_loss(F.avg_pool2d(source[-3], 2), F.avg_pool2d(target[-3].detach(), 2)) * 2
+        return contextual_style5_1 + contextual_style4_1 + contextual_style3_1
+
     
     def compute_generator_loss(self, input_label, input_semantics, real_image, ref_label=None, ref_semantics=None, ref_image=None, self_ref=None, bg=None, bg_gray=None, bg_edge=None, bg_mask=None):
         G_losses = {}
@@ -344,6 +351,10 @@ class Pix2PixModel(torch.nn.Module):
         
         G_losses['contextual'] = self.get_ctx_loss(
             fake_features, generate_out['ref_features']) * self.opt.lambda_vgg * self.opt.ctx_w
+
+        G_losses['style'] = self.get_style_loss(
+            fake_features, generate_out['ref_features']) * self.opt.weight_style
+
 
         if self.opt.warp_mask_losstype != 'none':
             ref_label = F.interpolate(

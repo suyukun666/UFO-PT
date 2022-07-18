@@ -32,6 +32,7 @@ class TrainOptions(BaseOptions):
 
         parser.add_argument('--which_perceptual', type=str, default='5_2', help='relu5_2 or relu4_2')
         parser.add_argument('--weight_perceptual', type=float, default=0.01)
+        parser.add_argument('--weight_style', type=float, default=0.01)
         parser.add_argument('--weight_mask', type=float, default=0.0, help='weight of warped mask loss, used in direct/cycle')
         parser.add_argument('--real_reference_probability', type=float, default=0.7, help='self-supervised training probability')
         parser.add_argument('--hard_reference_probability', type=float, default=0.2, help='hard reference training probability')

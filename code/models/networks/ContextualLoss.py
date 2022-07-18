@@ -75,6 +75,30 @@ class ContextualLoss(nn.Module):
         # loss = torch.mean(loss)
         return loss
 
+
+class StyleLoss_forward(nn.Module):
+
+    def __init__(self, opt):
+        super(StyleLoss_forward, self).__init__()
+        self.opt = opt
+        return None
+
+    def forward(X_features, Y_features):
+
+        a, b, c, d = X_features.size()
+
+        f1 = X_features.view(a * b, c * d)
+        gram_1 = torch.mm(f1, f1.t())
+        gram_1 /= (a * b * c * d)
+
+        f2 = Y_features.view(a * b, c * d)
+        gram_2 = torch.mm(f2, f2.t())
+        gram_2 /= (a * b * c * d)
+
+        return torch.mean((gram_1 - gram_2)**2)
+
+
+
 class ContextualLoss_forward(nn.Module):
     '''
         input is Al, Bl, channel = 1, range ~ [0, 255]

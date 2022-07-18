@@ -278,7 +278,7 @@ class Pix2PixModel(torch.nn.Module):
         style_style5_1 = self.style_loss(source[-1], target[-1].detach()) * 8
         style_style4_1 = self.style_loss(source[-2], target[-2].detach()) * 4
         style_style3_1 = self.style_loss(F.avg_pool2d(source[-3], 2), F.avg_pool2d(target[-3].detach(), 2)) * 2
-        return contextual_style5_1 + contextual_style4_1 + contextual_style3_1
+        return style_style5_1 + style_style4_1 + style_style3_1
 
     
     def compute_generator_loss(self, input_label, input_semantics, real_image, ref_label=None, ref_semantics=None, ref_image=None, self_ref=None, bg=None, bg_gray=None, bg_edge=None, bg_mask=None):

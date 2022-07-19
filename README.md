@@ -6,7 +6,7 @@ Object pose transformation is a challenging task. Yet, most existing pose transf
 
 ## Demo
 
-Download the checkpoint from [here](https://drive.google.com/drive/folders/1YifKgVu0GUY3IQsY8Mju8ksBzxFzCCs_?usp=sharing) and save them in `code/checkpoints/bird` and execute the following command, find the results in `code/results`
+Download the *Bird* checkpoint from [here](https://drive.google.com/drive/folders/1YifKgVu0GUY3IQsY8Mju8ksBzxFzCCs_?usp=sharing) and save them in `code/checkpoints/bird` and execute the following command, find the results in `code/results`
 
 ```
 cd code

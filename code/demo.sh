@@ -1,0 +1,1 @@
+python demo.py --name bird --dataset_mode bird --dataroot demo/ --gpu_ids 0 --nThreads 0 --batchSize 1 --use_attention --maskmix --warp_mask_losstype direct --PONO --PONO_C

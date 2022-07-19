@@ -8,9 +8,19 @@ Object pose transformation is a challenging task. Yet, most existing pose transf
 
 Download the *Bird* checkpoint from [here](https://drive.google.com/drive/folders/1YifKgVu0GUY3IQsY8Mju8ksBzxFzCCs_?usp=sharing) and save them in `code/checkpoints/bird` and execute the following command, find the results in `code/output/test/bird`
 
+##### Install the [Synchronized-BatchNorm](https://github.com/vacancy/Synchronized-BatchNorm-PyTorch) Library
+
 ```
-cd code
-sh demo.sh
+cd ./code/models/networks/
+git clone https://github.com/vacancy/Synchronized-BatchNorm-PyTorch
+cp -rf Synchronized-BatchNorm-PyTorch/sync_batchnorm .
+cd ../../
+```
+
+##### Run
+
+```
+sh ./demo.sh
 ```
 
 ## Result

@@ -25,5 +25,5 @@ sh demo.sh
 
 ## Acknowledgement
 
-Our code is heavily borrowed from [CoCosNet](https://github.com/microsoft/CoCosNet). We also thanks  [VTON](https://github.com/sergeywong). Many thanks for their hard work.
+Our code is heavily borrowed from [CoCosNet](https://github.com/microsoft/CoCosNet). We also thanks  [VTON](https://github.com/sergeywong/cp-vton). Many thanks for their hard work.
 

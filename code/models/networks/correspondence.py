@@ -182,7 +182,7 @@ class NoVGGCorrespondence(BaseNetwork):
         self.theta = nn.Conv2d(in_channels=self.in_channels + label_nc + coord_c, out_channels=self.inter_channels, kernel_size=1, stride=1, padding=0)
         self.theta_t = nn.Conv2d(256, 256, kernel_size=4, stride=4, padding=0)
 
-        self.upsampling_bi = nn.Upsample(scale_factor=opt.down, mode='bilinear') #for show
+        self.upsampling_bi = nn.Upsample(scale_factor=opt.down, mode='bilinear') 
         if opt.warp_bilinear:
             self.upsampling = nn.Upsample(scale_factor=opt.down, mode='bilinear')
         else:
@@ -283,19 +283,19 @@ class NoVGGCorrespondence(BaseNetwork):
             theta = F.unfold(theta, kernel_size=self.opt.match_kernel, padding=int(self.opt.match_kernel // 2))
             
         dim_mean = 1 if self.opt.PONO_C else -1
-        theta = theta - theta.mean(dim=dim_mean, keepdim=True)  # center the feature
+        theta = theta - theta.mean(dim=dim_mean, keepdim=True)  
         theta_norm = torch.norm(theta, 2, 1, keepdim=True) + sys.float_info.epsilon
         theta = torch.div(theta, theta_norm)
-        theta_permute = theta.permute(0, 2, 1)  # 2*(feature_height*feature_width)*256 [1, 4096, 2304]
+        theta_permute = theta.permute(0, 2, 1)  
 
         phi = self.phi(ref_features)
         phi_t = self.theta_t(phi)
         phi_t = torch.norm(phi_t, 2, 1, keepdim=True)
         if self.opt.match_kernel == 1:
-            phi = phi.view(batch_size, self.inter_channels, -1)  # 2*256*(feature_height*feature_width)
+            phi = phi.view(batch_size, self.inter_channels, -1)  
         else:
             phi = F.unfold(phi, kernel_size=self.opt.match_kernel, padding=int(self.opt.match_kernel // 2))
-        phi = phi - phi.mean(dim=dim_mean, keepdim=True)  # center the feature
+        phi = phi - phi.mean(dim=dim_mean, keepdim=True)  
         phi_norm = torch.norm(phi, 2, 1, keepdim=True) + sys.float_info.epsilon
         phi = torch.div(phi, phi_norm)
 

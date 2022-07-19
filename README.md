@@ -17,8 +17,6 @@ cp -rf Synchronized-BatchNorm-PyTorch/sync_batchnorm .
 cd ../../
 ```
 
-- #### Run
-
 ```
 sh ./demo.sh
 ```

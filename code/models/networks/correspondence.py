@@ -166,7 +166,7 @@ class NoVGGCorrespondence(BaseNetwork):
         assert (opt.down == 2) or (opt.down == 4)
         self.down = opt.down
         self.feature_channel = 64
-        self.in_channels = self.feature_channel * 4 #64*4=256
+        self.in_channels = self.feature_channel * 4 
         self.inter_channels = 256
         
         coord_c = 3 if opt.use_coordconv else 0
@@ -180,7 +180,6 @@ class NoVGGCorrespondence(BaseNetwork):
         
         self.phi = nn.Conv2d(in_channels=self.in_channels + label_nc + coord_c, out_channels=self.inter_channels, kernel_size=1, stride=1, padding=0)
         self.theta = nn.Conv2d(in_channels=self.in_channels + label_nc + coord_c, out_channels=self.inter_channels, kernel_size=1, stride=1, padding=0)
-        # self.phi_t = nn.Conv2d(256, 256, kernel_size=4, stride=4, padding=0)
         self.theta_t = nn.Conv2d(256, 256, kernel_size=4, stride=4, padding=0)
 
         self.upsampling_bi = nn.Upsample(scale_factor=opt.down, mode='bilinear') #for show
@@ -231,11 +230,7 @@ class NoVGGCorrespondence(BaseNetwork):
                 WTA_scale_weight=1,
                 alpha=1,
                 return_corr=False):
-        # print('ref_img.shape',ref_img.shape)[1, 3, 256, 256]
-        # print('real_img.shape',real_img.shape)[1, 3, 256, 256]
-        # print('seg_map.shape',seg_map.shape)[1, 151, 256, 256]
-        # print('ref_seg_map.shape',ref_seg_map.shape)[1, 151, 256, 256]
-        # sys.exit(0)
+        
         coor_out = {}
         batch_size = ref_img.shape[0]
         image_height = ref_img.shape[2]
@@ -253,9 +248,7 @@ class NoVGGCorrespondence(BaseNetwork):
         adaptive_feature_img = self.adaptive_model_img(ref_img, ref_img)
         adaptive_feature_seg = util.feature_normalize(adaptive_feature_seg)
         adaptive_feature_img = util.feature_normalize(adaptive_feature_img)
-        # print(adaptive_feature_seg.shape,'adaptive_feature_seg.shape')[1, 256, 64, 64]
-        # print(adaptive_feature_img.shape,'adaptive_feature_img.shape')[1, 256, 64, 64]
-        # sys.exit(0)
+        
 
         if self.opt.isTrain and self.opt.novgg_featpair > 0:
             adaptive_feature_img_pair = self.adaptive_model_img(real_img, real_img)
@@ -270,12 +263,6 @@ class NoVGGCorrespondence(BaseNetwork):
         ref_seg = F.interpolate(ref_seg_map, size=adaptive_feature_img.size()[2:], mode='nearest')
         if self.opt.maskmix:
             cont_features = self.layer(torch.cat((adaptive_feature_seg, seg), 1))
-            # print('adaptive_feature_seg.shape',adaptive_feature_seg.shape)[1, 256, 64, 64]
-            # print('seg.shape',seg.shape)[1, 151, 64, 64],adk一共有150个类+1个don't care
-            # print('torch.cat((adaptive_feature_seg, seg), 1).shape',torch.cat((adaptive_feature_seg, seg), 1).shape)[1, 407, 64, 64]
-            # print('type(cont_features)',type(cont_features))[1, 407, 64, 64]
-            # print('cont_features.shape',cont_features.shape)[1, 407, 64, 64]
-            # sys.exit(0)
             
             if self.opt.noise_for_mask and ((not self.opt.isTrain) or (self.opt.isTrain and self.opt.epoch > self.opt.mask_epoch)):
                 noise = torch.randn_like(ref_seg, requires_grad=False) * 0.01
@@ -290,7 +277,6 @@ class NoVGGCorrespondence(BaseNetwork):
         theta = self.theta(cont_features)
         theta_t = self.theta_t(theta)
         theta_t = torch.norm(theta_t, 2, 1, keepdim=True)
-        # print('theta.shape',theta.shape)[1, 256, 64, 64]
         if self.opt.match_kernel == 1:
             theta = theta.view(batch_size, self.inter_channels, -1)  
         else:

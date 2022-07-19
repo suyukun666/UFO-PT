@@ -57,11 +57,6 @@ class Pix2PixModel(torch.nn.Module):
         # input_label, input_semantics, real_image, self_ref, ref_image, ref_label, ref_semantics = self.preprocess_input(data, )
         input_label, input_semantics, real_image, self_ref, ref_image, ref_label, ref_semantics, bg, bg_gray, bg_edge ,bg_mask= self.preprocess_input(
             data, )
-        # print(input_label.shape)
-        # print(torch.unique(input_label))
-        # print(input_semantics.shape)
-        # print(torch.unique(input_semantics))
-        # exit(0)
 
         self.alpha = alpha
         generated_out = {}
@@ -348,7 +343,6 @@ class Pix2PixModel(torch.nn.Module):
             fake_features[self.perceptual_layer], generate_out['real_features'][self.perceptual_layer].detach())
         G_losses['perc'] = feat_loss * self.opt.weight_perceptual
 
-        
         G_losses['contextual'] = self.get_ctx_loss(
             fake_features, generate_out['ref_features']) * self.opt.lambda_vgg * self.opt.ctx_w
 
@@ -357,8 +351,6 @@ class Pix2PixModel(torch.nn.Module):
 
         if 'tps_loss' in generate_out and generate_out['tps_loss'] is not None:
             G_losses['tps_loss'] = generate_out['tps_loss']
-
-
 
         if self.opt.warp_mask_losstype != 'none':
             ref_label = F.interpolate(

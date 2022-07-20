@@ -1,5 +1,6 @@
 import os
 from collections import OrderedDict
+from tkinter import font
 import torch
 import torchvision.utils as vutils
 import torch.nn.functional as F
@@ -8,6 +9,7 @@ import numpy as np
 from util.util import masktorgb
 from options.test_options import TestOptions
 from models.pix2pix_model import Pix2PixModel
+from PIL import Image,ImageDraw
 
 opt = TestOptions().parse()
    
@@ -59,12 +61,24 @@ for i, data_i in enumerate(dataloader):
 
         # imgs = torch.cat((label.cpu(), data_i['ref'].cpu(), out['fake_image'].data.cpu()), 0)
         # imgs = torch.cat((label.cpu(), data_i['ref'].cpu(), out.data.cpu()), 0)
-        # imgs = torch.cat((data_i['image'].cpu(),label.cpu(), data_i['ref'].cpu(), out[0].data.cpu(),out[1].data.cpu()), 0)
-        imgs = out[0].data.cpu()
+        imgs = torch.cat((data_i['image'].cpu(), data_i['ref'].cpu(), out[0].data.cpu()),dim = 0)
+        # imgs = torch.cat((data_i['image'].cpu(), data_i['ref'].cpu(), out[0].data.cpu()), 1)
         try:
             imgs = (imgs + 1) / 2
             vutils.save_image(imgs, save_root + '/test/' + opt.name + '/' + str(i) + '.png',  
-                    nrow=imgs_num, padding=0, normalize=False)
+                    nrow=3, padding=0, normalize=False)
+            # add annotation
+            img_pth = save_root + '/test/' + opt.name + '/' + str(i) + '.png'
+            imgs = Image.open(img_pth)
+            imgs = np.array(imgs)
+            bar = np.ones((15,imgs.shape[1],3))*255
+            imgs = np.concatenate((bar,imgs),axis=0).astype(np.uint8)
+            imgs = Image.fromarray(imgs)
+            draw = ImageDraw.Draw(imgs)
+            draw.text((0,0),'pose', fill=(0,0,0))
+            draw.text((256,0),'appearance', fill=(0,0,0))
+            draw.text((256*2,0),'prediction', fill=(0,0,0))
+            imgs.save(img_pth)
             # imgs=imgs.reshape(5,3,3,256,256)
             # if not os.path.exists(save_root + '/test/' + opt.name + '/split/'):
             #     os.mkdir(save_root + '/test/' + opt.name + '/split/')

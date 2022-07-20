@@ -181,6 +181,7 @@ class NoVGGCorrespondence(BaseNetwork):
         self.phi = nn.Conv2d(in_channels=self.in_channels + label_nc + coord_c, out_channels=self.inter_channels, kernel_size=1, stride=1, padding=0)
         self.theta = nn.Conv2d(in_channels=self.in_channels + label_nc + coord_c, out_channels=self.inter_channels, kernel_size=1, stride=1, padding=0)
         self.theta_t = nn.Conv2d(256, 256, kernel_size=4, stride=4, padding=0)
+        self.phi_t = nn.Conv2d(256, 256, kernel_size=4, stride=4, padding=0)
 
         self.upsampling_bi = nn.Upsample(scale_factor=opt.down, mode='bilinear') 
         if opt.warp_bilinear:

@@ -30,6 +30,17 @@ cd ../../
 sh ./demo.sh
 ```
 
+## Training
+
+Download the VGG checkpoint from [here](https://drive.google.com/file/d/1IalcghHLCQ8hvhJDnw6HC7Y18Nv3Zuui/view?usp=sharing) and save them in `code/models` 
+
+- Then run the command
+
+```
+cd ./code
+python train.py --name bird --dataset_mode bird --dataroot bird_data/ --niter 100 --niter_decay 100 --use_attention --maskmix --noise_for_mask --mask_epoch 150 --warp_mask_losstype direct --weight_mask 100.0 --PONO --PONO_C --vgg_normal_correct --batchSize 1 --gpu_ids 0
+```
+
 ## Result
 
 - #### Video Imitation
